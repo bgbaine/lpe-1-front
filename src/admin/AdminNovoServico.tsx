@@ -43,7 +43,7 @@ export default function AdminNovoServico() {
       imagem: data.imagem,
       timeId: Number(data.timeId)
     }
-
+    console.log(novoServico)
     const response = await fetch(`${apiUrl}/servicos`,
       {
         method: "POST",

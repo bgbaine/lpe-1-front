@@ -31,11 +31,13 @@ export default function AdminLayout() {
     // Fetch tickets count when admin is logged in
     useEffect(() => {
         async function fetchTicketsCount() {
-            if (!admin.id) return
+            if (!admin.id || !admin.email) return
 
             setIsLoadingTickets(true)
             try {
-                const response = await fetch(`${apiUrl}/tickets`)
+                // Envia adminId e adminEmail para filtrar tickets
+                const url = `${apiUrl}/tickets?adminId=${admin.id}&adminEmail=${encodeURIComponent(admin.email)}`
+                const response = await fetch(url)
                 if (response.ok) {
                     const tickets = await response.json()
                     updateTicketsCount(tickets.length)
@@ -48,7 +50,7 @@ export default function AdminLayout() {
         }
 
         fetchTicketsCount()
-    }, [admin.id, updateTicketsCount])
+    }, [admin.id, admin.email, updateTicketsCount])
 
     function handleLogout() {
         deslogaAdmin()
@@ -152,19 +154,36 @@ export default function AdminLayout() {
                             </li>
                             <li>
                                 <Link 
-                                    to="/admin/administradores" 
+                                    to="/admin/funcionarios" 
                                     className={`flex items-center px-4 py-3 rounded-lg transition-colors duration-200 ${
-                                        location.pathname === '/admin/administradores' 
+                                        location.pathname === '/admin/funcionarios' 
                                             ? 'text-blue-700 bg-blue-50 border border-blue-200' 
                                             : 'text-gray-700 hover:bg-gray-100'
                                     }`}
                                 >
                                     <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                                     </svg>
-                                    Administradores
+                                    Funcionários
                                 </Link>
                             </li>
+                            {admin.email === "caio@email.com" && (
+                                <li>
+                                    <Link 
+                                        to="/admin/administradores" 
+                                        className={`flex items-center px-4 py-3 rounded-lg transition-colors duration-200 ${
+                                            location.pathname === '/admin/administradores' 
+                                                ? 'text-blue-700 bg-blue-50 border border-blue-200' 
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                        </svg>
+                                        Administradores
+                                    </Link>
+                                </li>
+                            )}
                         </ul>
                     </nav>
 

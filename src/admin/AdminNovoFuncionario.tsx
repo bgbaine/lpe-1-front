@@ -1,47 +1,21 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { toast } from "sonner"
-import type { TimeType } from "../utils/TimeType"
-import { useAdminStore } from "./context/AdminContext"
 
 const apiUrl = import.meta.env.VITE_API_URL
 
-export default function AdminNovoAdmin() {
+export default function AdminNovoFuncionario() {
     const navigate = useNavigate()
-    const { admin } = useAdminStore()
-    const [times, setTimes] = useState<TimeType[]>([])
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
         nome: "",
         email: "",
         senha: "",
         confirmarSenha: "",
-        timeId: ""
+        cargo: ""
     })
 
-    useEffect(() => {
-        // Verifica se o admin tem permissão para acessar esta página
-        if (admin.email !== "caio@email.com") {
-            navigate("/admin")
-            return
-        }
-
-        async function getTimes() {
-            try {
-                const response = await fetch(`${apiUrl}/times`)
-                if (response.ok) {
-                    const dados = await response.json()
-                    setTimes(dados)
-                }
-            } catch (error) {
-                console.error("Erro ao carregar times:", error)
-                toast.error("Erro ao carregar times")
-            }
-        }
-        getTimes()
-    }, [admin.email, navigate])
-
-    function handleInputChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+    function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
         const { name, value } = e.target
         setFormData(prev => ({
             ...prev,
@@ -77,16 +51,11 @@ export default function AdminNovoAdmin() {
             toast.error("Senha deve ter pelo menos 6 caracteres")
             return
         }
-        
-        if (!formData.timeId) {
-            toast.error("Selecione um time")
-            return
-        }
 
         setLoading(true)
 
         try {
-            const response = await fetch(`${apiUrl}/admins`, {
+            const response = await fetch(`${apiUrl}/funcionarios`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -95,21 +64,20 @@ export default function AdminNovoAdmin() {
                     nome: formData.nome.trim(),
                     email: formData.email.trim(),
                     senha: formData.senha,
-                    timeId: parseInt(formData.timeId),
-                    adminEmail: admin.email
+                    cargo: formData.cargo.trim() || undefined
                 })
             })
 
             if (response.ok) {
-                toast.success("Administrador criado com sucesso!")
-                navigate("/admin/administradores")
+                toast.success("Funcionário criado com sucesso!")
+                navigate("/admin/funcionarios")
             } else {
                 const error = await response.json()
-                toast.error(error.erro || error.message || "Erro ao criar administrador")
+                toast.error(error.erro || error.message || "Erro ao criar funcionário")
             }
         } catch (error) {
-            console.error("Erro ao criar administrador:", error)
-            toast.error("Erro ao criar administrador")
+            console.error("Erro ao criar funcionário:", error)
+            toast.error("Erro ao criar funcionário")
         } finally {
             setLoading(false)
         }
@@ -120,16 +88,16 @@ export default function AdminNovoAdmin() {
             <div className="mb-6">
                 <div className="flex items-center space-x-2 mb-2">
                     <Link 
-                        to="/admin/administradores"
+                        to="/admin/funcionarios"
                         className="text-blue-600 hover:text-blue-800 transition-colors"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"/>
                         </svg>
                     </Link>
-                    <h1 className="text-3xl font-bold text-gray-900">Novo Administrador</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">Novo Funcionário</h1>
                 </div>
-                <p className="text-gray-600">Adicione um novo administrador ao sistema</p>
+                <p className="text-gray-600">Adicione um novo funcionário ao sistema</p>
             </div>
 
             <div className="max-w-2xl">
@@ -156,7 +124,7 @@ export default function AdminNovoAdmin() {
                             {/* Email */}
                             <div className="md:col-span-2">
                                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Email *
+                                    E-mail *
                                 </label>
                                 <input
                                     type="email"
@@ -165,31 +133,25 @@ export default function AdminNovoAdmin() {
                                     value={formData.email}
                                     onChange={handleInputChange}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Digite o email"
+                                    placeholder="funcionario@email.com"
                                     required
                                 />
                             </div>
 
-                            {/* Time */}
+                            {/* Cargo */}
                             <div className="md:col-span-2">
-                                <label htmlFor="timeId" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Time *
+                                <label htmlFor="cargo" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Cargo
                                 </label>
-                                <select
-                                    id="timeId"
-                                    name="timeId"
-                                    value={formData.timeId}
+                                <input
+                                    type="text"
+                                    id="cargo"
+                                    name="cargo"
+                                    value={formData.cargo}
                                     onChange={handleInputChange}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    required
-                                >
-                                    <option value="">Selecione um time</option>
-                                    {times.map(time => (
-                                        <option key={time.id} value={time.id}>
-                                            {time.nome}
-                                        </option>
-                                    ))}
-                                </select>
+                                    placeholder="Ex: Analista, Técnico, etc."
+                                />
                             </div>
 
                             {/* Senha */}
@@ -204,11 +166,9 @@ export default function AdminNovoAdmin() {
                                     value={formData.senha}
                                     onChange={handleInputChange}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Digite a senha"
-                                    minLength={6}
+                                    placeholder="Mínimo 6 caracteres"
                                     required
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Mínimo de 6 caracteres</p>
                             </div>
 
                             {/* Confirmar Senha */}
@@ -223,31 +183,36 @@ export default function AdminNovoAdmin() {
                                     value={formData.confirmarSenha}
                                     onChange={handleInputChange}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Confirme a senha"
+                                    placeholder="Repita a senha"
                                     required
                                 />
                             </div>
                         </div>
 
-                        <div className="flex justify-end space-x-3 mt-8">
+                        {/* Botões */}
+                        <div className="flex items-center justify-end space-x-4 mt-6 pt-6 border-t border-gray-200">
                             <Link
-                                to="/admin/administradores"
-                                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                                to="/admin/funcionarios"
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                             >
                                 Cancelar
                             </Link>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 rounded-md transition-colors flex items-center space-x-2"
+                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
-                                {loading && (
-                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
+                                {loading ? (
+                                    <span className="flex items-center">
+                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Criando...
+                                    </span>
+                                ) : (
+                                    "Criar Funcionário"
                                 )}
-                                <span>{loading ? "Salvando..." : "Salvar"}</span>
                             </button>
                         </div>
                     </form>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useParams, useNavigate, Link } from "react-router-dom"
 import { toast } from "sonner"
 import type { TicketType } from "../utils/TicketType"
+import { useAdminStore } from "./context/AdminContext"
 
 const apiUrl = import.meta.env.VITE_API_URL
 
@@ -21,6 +22,7 @@ const coresStatus = {
 export default function AdminTicketDetalhes() {
     const { ticketId } = useParams<{ ticketId: string }>()
     const navigate = useNavigate()
+    const { admin } = useAdminStore()
     const [ticket, setTicket] = useState<TicketType | null>(null)
     const [loading, setLoading] = useState(true)
     const [resposta, setResposta] = useState("")
@@ -34,6 +36,14 @@ export default function AdminTicketDetalhes() {
                 const response = await fetch(`${apiUrl}/tickets/${ticketId}`)
                 if (response.ok) {
                     const dados = await response.json()
+                    
+                    // Verifica se o admin tem permissão para ver este ticket
+                    if (admin.email !== "caio@email.com" && dados.adminId !== admin.id) {
+                        toast.error("Você não tem permissão para visualizar este ticket")
+                        navigate("/admin/tickets")
+                        return
+                    }
+                    
                     setTicket(dados)
                 } else {
                     toast.error("Ticket não encontrado")
@@ -49,7 +59,7 @@ export default function AdminTicketDetalhes() {
         }
 
         buscarTicket()
-    }, [ticketId, navigate])
+    }, [ticketId, navigate, admin.id, admin.email])
 
     async function responderTicket() {
         if (!resposta.trim() || !ticket) {

@@ -1,20 +1,28 @@
 import { useEffect, useState } from "react"
 import ItemTicket from './components/ItemTicket'
 import type { TicketType } from "../utils/TicketType"
+import { useAdminStore } from "./context/AdminContext"
 
 const apiUrl = import.meta.env.VITE_API_URL
 
 export default function AdminTickets() {
   const [tickets, setTickets] = useState<TicketType[]>([])
+  const { admin } = useAdminStore()
 
   useEffect(() => {
     async function getTickets() {
-      const response = await fetch(`${apiUrl}/tickets`)
+      // Monta a URL com os parâmetros de query
+      let url = `${apiUrl}/tickets?adminId=${admin.id}&adminEmail=${encodeURIComponent(admin.email)}`
+      
+      const response = await fetch(url)
       const dados = await response.json()
       setTickets(dados)
     }
-    getTickets()
-  }, [])
+    
+    if (admin.id) {
+      getTickets()
+    }
+  }, [admin.id, admin.email])
 
   const listaTickets = tickets.map(ticket => (
     <ItemTicket key={ticket.id} ticket={ticket} tickets={tickets} setTickets={setTickets} />
