@@ -1,6 +1,7 @@
 import type { TicketType } from "./utils/TicketType"
 import { useParams } from "react-router-dom"
 import { useEffect, useState } from "react"
+import ChatBox from "./components/ChatBox"
 
 const apiUrl = import.meta.env.VITE_API_URL
 
@@ -120,6 +121,18 @@ export default function Detalhes() {
           )}
         </div>
       </section>
+
+      {/* Chat */}
+      {ticket && ticket.status === 'EM_ATENDIMENTO' && (
+        <div className="mt-6 mx-auto max-w-5xl">
+          <ChatBox 
+            ticketId={params.ticketId!}
+            userId={ticket.funcionarioId}
+            userName={ticket.funcionario.nome}
+            userType="funcionario"
+          />
+        </div>
+      )}
     </>
   )
 }

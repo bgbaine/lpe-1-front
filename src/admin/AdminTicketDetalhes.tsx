@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom"
 import { toast } from "sonner"
 import type { TicketType } from "../utils/TicketType"
 import { useAdminStore } from "./context/AdminContext"
+import ChatBox from "../components/ChatBox"
 
 const apiUrl = import.meta.env.VITE_API_URL
 
@@ -227,6 +228,16 @@ export default function AdminTicketDetalhes() {
                                 </div>
                             </div>
                         </div>
+                    )}
+
+                    {/* Chat em tempo real - apenas para tickets em atendimento */}
+                    {ticket.status === 'EM_ATENDIMENTO' && (
+                        <ChatBox 
+                            ticketId={ticket.id.toString()}
+                            userId={admin.id}
+                            userName={admin.nome}
+                            userType="admin"
+                        />
                     )}
                 </div>
 
