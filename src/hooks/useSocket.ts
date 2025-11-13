@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
 
-const apiUrl = import.meta.env.WEB_SOCKET_API_URL || 'http://localhost:3002'
+const apiUrl = "https://lpe-1-websocket.onrender.com"
 
 interface ChatMessage {
   id: string
